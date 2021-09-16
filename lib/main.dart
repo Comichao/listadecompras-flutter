@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share/share.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -32,7 +34,7 @@ class _HomeState extends State<Home> {
     _readData().then((data) {
       setState(() {
         compras = json.decode(data);
-        _refresh();
+        _sort();
       });
     });
   }
@@ -41,14 +43,14 @@ class _HomeState extends State<Home> {
     setState(() {
       Map<String, dynamic> newCompras = Map();
       newCompras["title"] = _controlador.text;
-      _controlador.text = "";
       newCompras["ok"] = false;
+      _controlador.text = "";
       compras.add(newCompras);
       _saveData();
     });
   }
 
-  Future<Null> _refresh() async {
+  void _sort() {
     setState(() {
       compras.sort((a, b) {
         if (a["ok"] == true && b["ok"] == false)
@@ -58,7 +60,6 @@ class _HomeState extends State<Home> {
         else
           return 0;
       });
-      _saveData();
     });
 
     return null;
@@ -71,76 +72,95 @@ class _HomeState extends State<Home> {
           title: Text("Lista de Compras"),
           backgroundColor: Colors.green,
           centerTitle: true,
-        ),
-        body: Column(
-          children: <Widget>[
-            Container(
-                padding: EdgeInsets.fromLTRB(15, 10, 5, 10),
-                child: Form(
-                  key: _formKey,
-                  child: Row(
-                    children: <Widget>[
-                      Theme(
-                          data: ThemeData(
-                              primaryColor: Colors.green,
-                              hintColor: Colors.green),
-                          child: Expanded(
-                              child: TextFormField(
-                                  controller: _controlador,
-                                  validator: (value) {
-                                    if (value.isEmpty) {
-                                      return "Insira um item";
-                                    }
-                                    return null;
-                                  },
-                                  decoration: InputDecoration(
-                                      enabledBorder: OutlineInputBorder(
-                                          borderSide:
-                                              BorderSide(color: Colors.green),
-                                          borderRadius:
-                                              BorderRadius.circular(100)),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(100)),
-                                      labelText: "Novo item",
-                                      hintText: "Insira um item",
-                                      hintStyle: TextStyle(color: Colors.grey),
-                                      labelStyle:
-                                          TextStyle(color: Colors.green),
-                                      suffixIcon: IconButton(
-                                        onPressed: () => _controlador.clear(),
-                                        icon: Icon(Icons.clear,
-                                            color: Colors.grey),
-                                      ))))),
-                      Padding(padding: EdgeInsets.only(right: 6)),
-                      ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              primary: Colors.green,
-                              shape: CircleBorder(),
-                              padding: EdgeInsets.all(12)),
-                          child: Icon(Icons.add, color: Colors.white),
-                          onPressed: () {
-                            if (_formKey.currentState.validate()) {
-                              _addCompras();
-                            }
-                          }),
-                    ],
-                  ),
-                )),
-            Expanded(
-              child: ListView.builder(
-                  padding: EdgeInsets.only(top: 5),
-                  itemCount: compras.length,
-                  itemBuilder: buildItem),
-            ),
+          actions: <Widget>[
+            IconButton(
+                icon: Icon(Icons.share),
+                onPressed: () {
+                  Share.share('*LISTA DE COMPRAS* \n${_shareLista()}');
+                })
           ],
+        ),
+        body: GestureDetector(
+          onTap: () => FocusScope.of(context).requestFocus(new FocusNode()),
+          child: Column(
+            children: <Widget>[
+              Container(
+                  padding: EdgeInsets.fromLTRB(15, 10, 5, 0),
+                  child: Form(
+                    key: _formKey,
+                    child: Row(
+                      children: <Widget>[
+                        Theme(
+                            data: ThemeData(
+                                primaryColor: Colors.green,
+                                hintColor: Colors.green),
+                            child: Expanded(
+                                child: TextFormField(
+                                    controller: _controlador,
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return "Insira um item";
+                                      }
+                                      return null;
+                                    },
+                                    decoration: InputDecoration(
+                                        helperText: ' ',
+                                        enabledBorder: OutlineInputBorder(
+                                            borderSide:
+                                                BorderSide(color: Colors.green),
+                                            borderRadius:
+                                                BorderRadius.circular(100)),
+                                        border: OutlineInputBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(100)),
+                                        labelText: "Novo item",
+                                        hintText: "Insira um item",
+                                        hintStyle:
+                                            TextStyle(color: Colors.grey),
+                                        labelStyle:
+                                            TextStyle(color: Colors.green),
+                                        suffixIcon: IconButton(
+                                          onPressed: () => _controlador.clear(),
+                                          icon: Icon(Icons.clear,
+                                              color: Colors.grey),
+                                        ))))),
+                        Padding(padding: EdgeInsets.only(right: 6)),
+                        Column(children: [
+                          ElevatedButton(
+                            child:
+                                Icon(Icons.add, color: Colors.white, size: 28),
+                            style: ElevatedButton.styleFrom(
+                                primary: Colors.green,
+                                shape: CircleBorder(),
+                                padding: EdgeInsets.all(12)),
+                            onPressed: () {
+                              if (_formKey.currentState.validate()) {
+                                _addCompras();
+                              }
+                            },
+                          ),
+                          SizedBox(
+                            height: 22,
+                          )
+                        ])
+                      ],
+                    ),
+                  )),
+              Expanded(
+                child: ListView.builder(
+                    itemCount: compras.length, itemBuilder: buildItem),
+              ),
+            ],
+          ),
         ),
         floatingActionButton: FloatingActionButton.extended(
           icon: Icon(Icons.add),
           label: Text("Nova lista"),
           onPressed: () {
-            compras.clear();
-            _saveData();
+            setState(() {
+              _showAlertDialog(context);
+              _saveData();
+            });
           },
           backgroundColor: Colors.green,
         ),
@@ -183,7 +203,7 @@ class _HomeState extends State<Home> {
             if (compras[index]["ok"] == false) {
               compras[index]["ok"] = true;
               _saveData();
-            } else if (compras[index]["ok"] == true) {
+            } else {
               compras[index]["ok"] = false;
               _saveData();
             }
@@ -221,6 +241,51 @@ class _HomeState extends State<Home> {
     );
   }
 
+  _shareLista() {
+    String listaShare = '';
+    for (var i = 0; i < compras.length; i++) {
+      listaShare += '- ${compras[i]["title"]}';
+      listaShare += '\n';
+    }
+    return listaShare;
+  }
+
+  _showAlertDialog(BuildContext context) {
+    Widget _sim = TextButton(
+      onPressed: () {
+        compras.clear();
+        Navigator.pop(context);
+        _saveData();
+      },
+      child:
+          Text("Sim", style: TextStyle(color: Colors.teal[800], fontSize: 17)),
+    );
+    Widget _nao = TextButton(
+      onPressed: () {
+        Navigator.pop(context);
+        FocusManager.instance.primaryFocus.unfocus();
+      },
+      child:
+          Text("Não", style: TextStyle(color: Colors.teal[800], fontSize: 17)),
+    );
+
+    AlertDialog _alert = AlertDialog(
+      title: Text(
+        "Nova lista",
+        style: TextStyle(fontSize: 22),
+      ),
+      content: Text("Deseja limpar a lista atual e criar uma nova?",
+          style: TextStyle(fontSize: 17)),
+      actions: [_nao, _sim],
+    );
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return _alert;
+        },
+        barrierDismissible: true);
+  }
+
   Future<File> _getFile() async {
     final directory = await getApplicationDocumentsDirectory();
     return File("${directory.path}/data.json");
@@ -228,7 +293,7 @@ class _HomeState extends State<Home> {
 
   Future<File> _saveData() async {
     String data = json.encode(compras);
-    _refresh();
+    _sort();
 
     final file = await _getFile();
     return file.writeAsString(data);
