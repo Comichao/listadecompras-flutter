@@ -13,8 +13,8 @@ Para deletar um ou mais itens, basta rolá-lo para o lado direito. Para deletar 
 
 
 <p align ="center">
-  <img src="https://github.com/bigpedrolucas/ListaDeCompras-Flutter/blob/master/img3.jpeg" width="25%" height="25%" hspace="10px"/>
-  <img src="https://github.com/bigpedrolucas/ListaDeCompras-Flutter/blob/master/img2.jpeg" width="25%" height="25%" hspace="10px"/>
-  <img src="https://github.com/bigpedrolucas/ListaDeCompras-Flutter/blob/master/img1.jpeg" width="25%" height="25%" hspace="10px"/>
+  <img src="https://github.com/bigpedrolucas/ListaDeCompras-Flutter/blob/master/img3.jpeg" width="27%" height="27%" hspace="10px"/>
+  <img src="https://github.com/bigpedrolucas/ListaDeCompras-Flutter/blob/master/img2.jpeg" width="27%" height="27%" hspace="10px"/>
+  <img src="https://github.com/bigpedrolucas/ListaDeCompras-Flutter/blob/master/img1.jpeg" width="27%" height="27%" hspace="10px"/>
 </p>
 
